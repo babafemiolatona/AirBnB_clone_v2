@@ -42,16 +42,17 @@ class DBStorage:
                 objs += self.__session.query(v).all()
         else:
             objs = self.__session.query(cls).all()
-        return {"{}.{}".format(type(obj).__name__, obj.id): obj for obj in objs}
+        return {"{}.{}".format(type(obj).__name__,
+                               obj.id): obj for obj in objs}
 
     def new(self, obj):
         """Adds the object to the current database session"""
         self.__session.add(obj)
-    
+
     def save(self):
         """Commits all changes of the current database session"""
         self.__session.commit()
-    
+
     def delete(self, obj=None):
         """Deletes from the current database session obj if not None"""
         if obj is not None:
@@ -59,9 +60,13 @@ class DBStorage:
             self.save()
 
     def reload(self):
-        """Creates all tables in the database and creates the current database session"""
+        """
+        Creates all tables in the database and
+        creates the current database session
+        """
         Base.metadata.create_all(self.__engine)
-        Session = scoped_session(sessionmaker(bind=self.__engine, expire_on_commit=False))
+        Session = scoped_session(sessionmaker(bind=self.__engine,
+                                              expire_on_commit=False))
         self.__session = Session()
 
     def close(self):
