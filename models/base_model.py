@@ -6,6 +6,8 @@ from sqlalchemy import Column, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 import models
 
+time = "%Y-%m-%dT%H:%M:%S.%f"
+
 Base = declarative_base()
 
 
@@ -17,16 +19,16 @@ class BaseModel:
 
     def __init__(self, *args, **kwargs):
         """Instantiates a new model"""
-        if not kwargs:
-            self.id = str(uuid.uuid4())
-            self.created_at = datetime.utcnow()
-            self.updated_at = datetime.utcnow()
-        if kwargs:
-            for key, value in kwargs.items():
-                if key == "created_at" or key == "updated_at":
-                    value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
-                if key != "__class__":
-                    setattr(self, key, value)
+        # if not kwargs:
+        #     self.id = str(uuid.uuid4())
+        #     self.created_at = datetime.utcnow()
+        #     self.updated_at = datetime.utcnow()
+        # if kwargs:
+        #     for key, value in kwargs.items():
+        #         if key == "created_at" or key == "updated_at":
+        #             value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+        #         if key != "__class__":
+        #             setattr(self, key, value)
         # else:
         #     kwargs['updated_at'] = datetime.strptime(kwargs['updated_at'],
         #                                              '%Y-%m-%dT%H:%M:%S.%f')
@@ -36,6 +38,24 @@ class BaseModel:
         #     # self.__dict__.update(kwargs)
         #     for key, value in kwargs.items():
         #         setattr(self, key, value)
+        if kwargs:
+            for key, value in kwargs.items():
+                if key != "__class__":
+                    setattr(self, key, value)
+            if kwargs.get("created_at", None) and type(self.created_at) is str:
+                self.created_at = datetime.strptime(kwargs["created_at"], time)
+            else:
+                self.created_at = datetime.utcnow()
+            if kwargs.get("updated_at", None) and type(self.updated_at) is str:
+                self.updated_at = datetime.strptime(kwargs["updated_at"], time)
+            else:
+                self.updated_at = datetime.utcnow()
+            if kwargs.get("id", None) is None:
+                self.id = str(uuid.uuid4())
+        else:
+            self.id = str(uuid.uuid4())
+            self.created_at = datetime.utcnow()
+            self.updated_at = self.created_at
 
     def __str__(self):
         """Returns a string representation of the instance"""
